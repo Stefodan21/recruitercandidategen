@@ -1,122 +1,81 @@
-title Automated Candidate Data Pipeline Flow
-direction right
+title Recruiter Lead Generation Pipeline (Detailed)
 
-// Groups and nodes
-Start Retrieval [shape: oval, color: lightblue, icon: play]
-
-// Parallel Retrieval
-Parallel Retrieval [color: purple, icon: globe] {
-  Query LinkedIn [icon: globe, color: purple]
-  Query GitHub Pages [icon: github, color: purple]
-  Query Vercel [icon: vercel, color: purple]
-  Query Netlify [icon: netlify, color: purple]
-  Query AWS S3 [icon: aws-s3, color: purple]
-  Query Portfolio Sites [icon: file-text, color: purple]
-  Proxy Rotation [icon: shuffle, color: orange]
-  Headless Browsers [icon: monitor, color: orange]
-  Raw Files Output [icon: file, color: gray]
+// Main pipeline groups
+Search [color: blue, icon: search] {
+  Start Search [shape: oval, color: lightblue, icon: play]
+  Build Boolean Query [icon: filter]
+  Execute Search Queries [icon: globe]
+  Aggregate Profile Links [icon: link]
+  Profile Links JSON [shape: oval, color: lightblue, icon: file-text]
 }
 
-// Parsing Content
-Parsing Content [color: blue, icon: file-text] {
-  Extract HTML Text [icon: code, color: blue]
-  Extract PDF Text [icon: file-text, color: blue]
-  Extract DOCX Markdown Text [icon: file-text, color: blue]
-  Extract Entities [icon: user, color: teal]
-  Regex Extraction [icon: search, color: teal]
-  NLP Extraction [icon: cpu, color: teal]
-  Combine Resume and Portfolio [icon: layers, color: teal]
-  Parsed Candidate Profiles [icon: users, color: blue]
+Ingestion [color: orange, icon: download] {
+  Start Ingestion [shape: oval, color: lightorange, icon: play]
+  Fetch Codebase or Bundles [icon: download]
+  Discover Candidate Profiles [icon: users]
+  Extract Content [icon: file-text]
+  Raw Profiles JSON [shape: oval, color: lightorange, icon: file-text]
+  Deduplicate Profiles [icon: copy]
+  Unique Profiles JSON [shape: oval, color: lightorange, icon: file-text]
 }
 
-// Data Structuring & Normalization
-Data Structuring and Normalization [color: green, icon: database] {
-  Canonical Fields Mapping [icon: list, color: green]
-  Normalize Skills [icon: check-square, color: green]
-  Normalize Locations [icon: map-pin, color: green]
-  Normalize Titles [icon: briefcase, color: green]
-  Store in Database [icon: database, color: green]
-  Skill Hash Map [icon: hash, color: green]
-  Structured Candidate Records [icon: user-check, color: green]
+Field Extraction [color: green, icon: database] {
+  Start Field Extraction [shape: oval, color: lightgreen, icon: play]
+  Extract Contact Information [icon: mail]
+  Map Fields to Database [icon: database]
+  Structured Profiles JSON [shape: oval, color: lightgreen, icon: file-text]
 }
 
-// Deduplication & Identity Resolution
-Deduplication and Identity Resolution [color: orange, icon: refresh-ccw] {
-  Identify by Email [icon: mail, color: orange]
-  Identify by LinkedIn [icon: linkedin, color: orange]
-  Identify by GitHub [icon: github, color: orange]
-  Identify by Portfolio [icon: file-text, color: orange]
-  Hash File Comparison [icon: hash, color: orange]
-  Fuzzy Matching [icon: shuffle, color: orange]
-  Graph Traversal Merge [icon: share-2, color: orange]
-  Deduplicated Candidates [icon: user-check, color: orange]
+Export [color: purple, icon: upload] {
+  Start Export [shape: oval, color: lavender, icon: play]
+  Export to CSV [icon: file-text]
+  Export to Database [icon: database]
+  Export to Airtable [icon: table]
+  Recruiter Ready CSV [shape: oval, color: lavender, icon: file-text]
+  Database Entries [shape: oval, color: lavender, icon: database]
+  Airtable Updates [shape: oval, color: lavender, icon: table]
 }
 
-// Candidate Ranking
-
-// Pipeline Integration
-Pipeline Integration [color: lightblue, icon: send] {
-  Export CSV [icon: file, color: lightblue]
-  Export to Airtable CRM [icon: send, color: lightblue]
-  Scheduled Scraping [icon: clock, color: lightblue]
-  Error Handling Logging [icon: alert-triangle, color: red]
-  Final Candidate Database [icon: database, color: lightblue]
-  End [shape: oval, color: lightgreen, icon: check]
+// Common utilities (shared across stages)
+Common Utilities [color: gray, icon: tool] {
+  Caching [icon: database]
+  Hashing [icon: lock]
+  Logging [icon: log-in]
+  IO Helpers [icon: file]
+  Models [icon: code]
+  Airtable Client [icon: api]
+  Seen Profiles Table [icon: database]
 }
 
-// Relationships
-Start Retrieval > Parallel Retrieval
-Proxy Rotation > Query LinkedIn
-Proxy Rotation > Query GitHub Pages
-Proxy Rotation > Query Vercel
-Proxy Rotation > Query Netlify
-Proxy Rotation > Query AWS S3
-Proxy Rotation > Query Portfolio Sites
-Headless Browsers > Query LinkedIn
-Headless Browsers > Query GitHub Pages
-Headless Browsers > Query Vercel
-Headless Browsers > Query Netlify
-Headless Browsers > Query AWS S3
-Headless Browsers > Query Portfolio Sites
-Query LinkedIn > Raw Files Output
-Query GitHub Pages > Raw Files Output
-Query Vercel > Raw Files Output
-Query Netlify > Raw Files Output
-Query AWS S3 > Raw Files Output
-Query Portfolio Sites > Raw Files Output
-Raw Files Output > Parsing Content
+// CI/CD orchestration (manages pipeline)
+CI/CD Orchestration [color: black, icon: gear] {
+  Pipeline Workflow [icon: code]
+}
 
-Extract HTML Text > Extract Entities
-Extract PDF Text > Extract Entities
-Extract DOCX Markdown Text > Extract Entities
-Extract Entities > Regex Extraction
-Extract Entities > NLP Extraction
-Regex Extraction > Combine Resume and Portfolio
-NLP Extraction > Combine Resume and Portfolio
-Combine Resume and Portfolio > Parsed Candidate Profiles
-Parsed Candidate Profiles > Data Structuring and Normalization
+// Data flow relationships (artifact hand-off)
+Start Search > Build Boolean Query
+Build Boolean Query > Execute Search Queries
+Execute Search Queries > Aggregate Profile Links
+Aggregate Profile Links > Profile Links JSON
 
-Canonical Fields Mapping > Normalize Skills
-Canonical Fields Mapping > Normalize Locations
-Canonical Fields Mapping > Normalize Titles
-Normalize Skills > Store in Database
-Normalize Locations > Store in Database
-Normalize Titles > Store in Database
-Store in Database > Skill Hash Map
-Skill Hash Map > Structured Candidate Records
-Structured Candidate Records > Deduplication and Identity Resolution
+Profile Links JSON > Start Ingestion
+Start Ingestion > Fetch Codebase or Bundles
+Fetch Codebase or Bundles > Discover Candidate Profiles
+Discover Candidate Profiles > Extract Content
+Extract Content > Raw Profiles JSON
+Raw Profiles JSON > Deduplicate Profiles
+Deduplicate Profiles > Unique Profiles JSON
 
-Identify by Email > Hash File Comparison
-Identify by LinkedIn > Hash File Comparison
-Identify by GitHub > Hash File Comparison
-Identify by Portfolio > Hash File Comparison
-Hash File Comparison > Fuzzy Matching
-Fuzzy Matching > Graph Traversal Merge
-Graph Traversal Merge > Deduplicated Candidates
+Unique Profiles JSON > Start Field Extraction
+Start Field Extraction > Extract Contact Information
+Extract Contact Information > Map Fields to Database
+Map Fields to Database > Structured Profiles JSON
 
+Structured Profiles JSON > Start Export
+Start Export > Export to CSV
+Start Export > Export to Database
+Start Export > Export to Airtable
 
-Export CSV > Final Candidate Database
-Export to Airtable CRM > Final Candidate Database
-Scheduled Scraping > Final Candidate Database
-Error Handling Logging > Final Candidate Database
-Final Candidate Database > End
+Export to CSV > Recruiter Ready CSV
+Export to Database > Database Entries
+Export to Airtable > Airtable Updates
