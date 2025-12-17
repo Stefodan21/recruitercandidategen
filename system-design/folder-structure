@@ -1,0 +1,71 @@
+
+recruiterleadgen/
+│
+├── .github/
+│   └── workflows/
+│       └── pipeline.yml          # CI orchestration (artifacts + caching)
+│                                 # Jobs: Search → Ingestion → Deduplication → Field Extraction → Export
+│
+├── search/                       # Step 1: Boolean query + portfolio discovery
+│   ├── bool_query.py             # Build recruiter Boolean strings with site filters (vercel, s3, github.io, etc.)
+│   │                             # Generates batch Boolean queries per hosting service for discovery
+│   ├── crawler.py                # Executes queries against search engine APIs (Google/Bing)
+│   │                             # Runs queries in parallel to speed up discovery
+│   │                             # Light retry logic for occasional network hiccups
+│   ├── link_collector.py         # Aggregates ~100–200 candidate profile root links per batch query set
+│   │                             # Deduplicates and normalizes results across hosting services
+│   │                             # Outputs artifact: profile_links.json
+│   ├── Dockerfile                # Base: python:3.11-slim → stable networking, SSL/DNS
+│   │                             # Workload: network-heavy, CPU-light
+│   │                             # Output: profile_links.json (artifact for ingestion stage)
+│   └── requirements.txt          # Dependencies: requests, aiohttp (for async crawling),
+│                                 #               search API client (Google/Bing),
+│                                 #               json, logging
+│
+├── ingestion/                    # Step 2: Pull full codebases and extract content
+│   ├── fetch_codebase.py         # Clone repos / download site bundles (zip/tar/html)
+│   ├── discover_profiles.py      # Locate resume.*, README.*, about.*, /public/, /docs/
+│   ├── extract_content.py        # Parse discovered files into normalized text blobs
+│   ├── Dockerfile                # Base: python:3.11-slim-tools (Python + git/unzip/tar baked in)
+│   │                             # Workload: network + disk I/O heavy
+│   │                             # Output: raw_profiles.json
+│   └── requirements.txt
+│
+├── deduplication/                # Step 3: Collapse duplicates
+│   ├── hash_profiles.py          # Hash normalized text + composite identifiers (name + contact + content hash)
+│   ├── Dockerfile                # Base: python:3.11-alpine → smallest footprint
+│   │                             # Workload: CPU-heavy, memory-light
+│   │                             # Output: unique_profiles.json
+│   └── requirements.txt
+│
+├── field_extraction/             # Step 4: Pull structured candidate fields
+│   ├── extract_contact.py        # Regex-based extraction: LinkedIn, GitHub, email, phone
+│   ├── map_fields.py             # Map into defined DB fields
+│   ├── Dockerfile                # Base: python:3.11-slim → regex parsing
+│   │                             # Workload: CPU-light, deterministic pattern matching
+│   │                             # Output: structured_profiles.json
+│   └── requirements.txt          # Dependencies: none beyond stdlib (regex built-in)
+│
+├── export/                       # Step 5: Save structured results
+│   ├── to_csv.py                 # Export to CSV
+│   ├── to_db.py                  # Export to DB (PostgreSQL, SQLite)
+│   ├── to_airtable.py            # Append/update records in Airtable table (persistent dedupe cache)
+│   ├── Dockerfile                # Base: python:3.11-slim → DB drivers + API calls
+│   │                             # Workload: I/O-heavy, API integrations
+│   │                             # Output: export.csv + Airtable updates
+│   └── requirements.txt
+│
+├── common/                       # Shared utilities (no business logic)
+│   ├── caching.py                # HTTP cache, profile cache, content hash cache
+│   ├── hashing.py                # Deterministic hashing (stable keys)
+│   ├── logging.py                # Structured logs
+│   ├── io.py                     # Read/write helpers
+│   ├── models.py                 # Typed dataclasses for Candidate, ContactInfo
+│   ├── airtable_client.py        # Wrapper for Airtable API (check_seen, update_seen)
+│   └── seen_profiles.json/db     # Persistent lookup table of URL → hash mappings
+│
+├── docs/
+│   ├── architecture.md           # High-level system design
+│   ├── workflow_diagram.png      # Visual pipeline diagram
+│   └── data_flow.md              # Artifact hand-off documentation
+└── README.md
