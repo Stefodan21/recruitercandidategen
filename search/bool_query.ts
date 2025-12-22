@@ -1,20 +1,30 @@
 
-export interface BoolClause {
-  [key: string]: any;
+
+interface QueryInput {
+  role: string;
+  skills: string[];
+  location: string;
+}
+const sites = [ 
+  "vercel.app", 
+  "netlify.app", 
+  "github.io", 
+  "gitlab.io", 
+  "s3.amazonaws.com", 
+  "pages.dev", 
+  "web.app", 
+  "firebaseapp.com", 
+  "surge.sh", 
+  "onrender.com", 
+  "ondigitalocean.app",
+  "repl.co",
+  "dev" // .dev domains 
+];
+
+
+export function buildQuery(input: QueryInput, site: string): string {
+  const skillPart = `(${input.skills.join(" OR ")})`;
+
+  return `site:${site} "${input.role}" ${skillPart} "${input.location}"`;
 }
 
-export interface BoolQuery {
-  must?: BoolClause[];
-  should?: BoolClause[];
-  must_not?: BoolClause[];
-  filter?: BoolClause[];
-}
-
-export function boolQuery(params: BoolQuery): BoolQuery {
-  return {
-    must: params.must ?? [],
-    should: params.should ?? [],
-    must_not: params.must_not ?? [],
-    filter: params.filter ?? []
-  };
-}
