@@ -97,9 +97,10 @@ export function collectLinks(results: Array<{ query: string; data: any }>) {
 
   // Write artifact for ingestion
   fs.writeFileSync(
-    path.join(__dirname, "new_links.json"),
+    path.join(process.cwd(), "new_links.json"),
     JSON.stringify(freshLinks, null, 2)
   );
+
 
   return freshLinks;
 }
