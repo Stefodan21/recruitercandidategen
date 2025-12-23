@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+const workspaceDir = "workspace"
+
 type Job struct {
 	URL string `json:"url"`
 }
@@ -23,8 +25,6 @@ type Result struct {
 	Path  string `json:"path"`
 	Error string `json:"error,omitempty"`
 }
-
-const workspaceDir = "workspace"
 
 // Global rate limiter: 1 request every 500ms
 var rateLimiter = time.Tick(500 * time.Millisecond)
