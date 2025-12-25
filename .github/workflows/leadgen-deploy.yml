@@ -38,7 +38,8 @@ jobs:
 
             - uses: actions/download-artifact@v4
               with:
-                name: profile-links
+                name: new_links
+                path: new_links.json
 
             - name: Build ingestion image
               run: docker build -t ingestion ./ingestion
@@ -48,8 +49,8 @@ jobs:
 
             - uses: actions/upload-artifact@v4
               with:
-                name: ingested-data
-                path: ingested-data.json
+                name: raw_profiles
+                path: raw_profiles.json
 
     field_extraction:
         needs: ingestion
@@ -60,7 +61,8 @@ jobs:
 
             - uses: actions/download-artifact@v4
               with:
-                name: ingested-data
+                name: raw_profiles
+                path: raw_profiles.json
 
             - name: Build field extraction image
               run: docker build -t field-extraction ./field_extraction

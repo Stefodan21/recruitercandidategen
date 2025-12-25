@@ -54,7 +54,7 @@ recruiterleadgen/
 │
 ├── field_extraction/             # Step 4: Pull structured candidate fields
 │   ├── extract_contact.rs        # Rust → regex-based extraction: LinkedIn, GitHub, email, phone
-│   │                             # Memory-safe, blazing fast regex parsing
+│   │                             # Memmapory-safe, blazing fast regex parsing
 │   ├── map_fields.rs             # Rust → map into defined DB fields
 │   ├── Dockerfile                # Base: rust:1.80-slim → regex crate, serde for JSON
 │   └── Cargo.toml                # Dependencies: regex, serde_json
