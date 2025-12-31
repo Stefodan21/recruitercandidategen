@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json package-lock.json* ./
 
 # Installs the dependencies defined in package.json
-RUN npm install
+RUN npm install -g ts-node typescript
 
 # Copies the rest of the application code to the working directory
 COPY . .
