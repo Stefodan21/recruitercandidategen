@@ -20,7 +20,9 @@ jobs:
         run: docker build -t search -f search/Dockerfile search
 
       - name: Run search
-        run: docker run --rm -e GOOGLE_KEY=${{ secrets.GOOGLE_KEY }} -e CX_ID=${{ secrets.CX_ID }} search
+        run: |
+          docker run --rm -e GOOGLE_KEY=${{ secrets.GOOGLE_KEY }} -e CX_ID=${{ secrets.CX_ID }} \
+          search
 
       - uses: actions/upload-artifact@v4
         with:
