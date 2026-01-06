@@ -21,7 +21,7 @@ jobs:
 
       - name: Run search
         run: |
-          docker run --rm -v ${{ github.workspace }}:/app -e GOOGLE_KEY=${{ secrets.GOOGLE_KEY }} -e CX_ID=${{ secrets.CX_ID }} \ search
+          docker run --rm -v ${{ github.workspace }}:/app \ -e GOOGLE_KEY=${{ secrets.GOOGLE_KEY }} -e CX_ID=${{ secrets.CX_ID }} \ search
 
       - uses: actions/upload-artifact@v4
         with:
