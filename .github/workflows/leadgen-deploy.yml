@@ -10,96 +10,94 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    search:
-        runs-on: ubuntu-latest
-        timeout-minutes: 30
-        steps:
-            - uses: actions/checkout@v4
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
 
-            - name: Build search image
-              run: docker build -t search -f search/Dockerfile search
+      - name: Build search image
+        run: docker build -t search -f search/Dockerfile search
+
+      - name: Run search
+        run: docker run --rm -e GOOGLE_KEY=${{ secrets.GOOGLE_KEY }} -e CX_ID=${{ secrets.CX_ID }} search
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: new_links
+          path: new_links.json
 
 
-            - name: Run search
-              run:  docker run --rm -e GOOGLE_KEY=${{ secrets.GOOGLE_KEY }} -e CX_ID=${{ secrets.CX_ID }} search
-              
-            - uses: actions/upload-artifact@v4
-              with:
-                name: new_links
-                path: new_links.json
+  ingestion:
+    needs: search
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
 
-    
-    ingestion:
-        needs: search
-        runs-on: ubuntu-latest
-        timeout-minutes: 30
-        steps:
-            - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: new_links
+          path: new_links.json
 
-            - uses: actions/download-artifact@v4
-              with:
-                name: new_links
-                path: new_links.json
+      - name: Build ingestion image
+        run: docker build -t ingestion ./ingestion
 
-            - name: Build ingestion image
-              run: docker build -t ingestion ./ingestion
-  
-            - name: Run ingestion
-              run: docker run --rm -v ${{ github.workspace }}:/app ingestion
+      - name: Run ingestion
+        run: docker run --rm -v ${{ github.workspace }}:/app ingestion
+      - uses: actions/upload-artifact@v4
+        with:
+          name: raw_profiles
+          path: raw_profiles.json
 
-            - uses: actions/upload-artifact@v4
-              with:
-                name: raw_profiles
-                path: raw_profiles.json
+  field_extraction:
+    needs: ingestion
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
 
-    field_extraction:
-        needs: ingestion
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-        steps:
-            - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: raw_profiles
+          path: raw_profiles.json
 
-            - uses: actions/download-artifact@v4
-              with:
-                name: raw_profiles
-                path: raw_profiles.json
+      - name: Build field extraction image
+        run: docker build -t field-extraction ./field_extraction
 
-            - name: Build field extraction image
-              run: docker build -t field-extraction ./field_extraction
+          # FIXED: explicitly run the Rust binaries
+      - name: Run extract_contact
+        run: |
+          docker run --rm -i field-extraction \
+          extract_contact < raw_profiles.json > contact_fields.json
 
-            # FIXED: explicitly run the Rust binaries
-            - name: Run extract_contact
-              run: |
-                docker run --rm -i field-extraction \
-                  extract_contact < raw_profiles.json > contact_fields.json
+      - name: Run map_fields
+        run: |
+          docker run --rm -i field-extraction \
+          map_fields < contact_fields.json > extracted_fields.json
 
-            - name: Run map_fields
-              run: |
-                docker run --rm -i field-extraction \
-                  map_fields < contact_fields.json > extracted_fields.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extracted_fields
+          path: extracted_fields.json
 
-            - uses: actions/upload-artifact@v4
-              with:
-                name: extracted_fields
-                path: extracted_fields.json
+  export:
+    needs: field_extraction
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
 
-    export:
-        needs: field_extraction
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-        steps:
-            - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: extracted-fields
 
-            - uses: actions/download-artifact@v4
-              with:
-                name: extracted-fields
-
-            - name: Build export image
-              run: docker build -t export ./export
-            - name: Export to Supabase
-              run: |
-                docker run --rm \
-                  -v ${{ github.workspace }}:/app \
-                  -e SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
-                  -e SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }} \
-                  export ts-node to_db.ts
+      - name: Build export image
+        run: docker build -t export ./export
+      - name: Export to Supabase
+        run: |
+          docker run --rm \
+          -v ${{ github.workspace }}:/app \
+          -e SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+          -e SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }} \
+          export ts-node to_db.ts
