@@ -7,4 +7,5 @@ RUN npm install
 
 COPY . .
 
+ENTRYPOINT []
 CMD ["npx", "ts-node", "main.ts"]
