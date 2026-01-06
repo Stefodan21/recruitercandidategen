@@ -45,7 +45,8 @@ jobs:
         run: docker build -t ingestion ./ingestion
 
       - name: Run ingestion
-        run: docker run --rm -v ${{ github.workspace }}:/app ingestion
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/app ingestion
       - uses: actions/upload-artifact@v4
         with:
           name: raw_profiles
