@@ -25,7 +25,7 @@ jobs:
       - name: Run search
         run: >-
           docker run --rm  
-          -e GOOGLE_KEY=${{ secrets.GOOGLE_KEY }} -e CX_ID=${{ secrets.CX_ID }} search
+          -e GOOGLE_KEY=${{ secrets.GOOGLE_KEY }} -e CX_ID=${{ secrets.CX_ID }} search:latest
 
       - uses: actions/upload-artifact@v4
         with:
