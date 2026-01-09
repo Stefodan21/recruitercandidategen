@@ -5,7 +5,8 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
 
-COPY . .
+# COPY . .
 
 ENTRYPOINT []
+
 CMD ["npx", "ts-node", "main.ts"]
