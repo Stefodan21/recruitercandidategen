@@ -19,6 +19,9 @@ jobs:
       - name: Build search image
         run: docker build -t search -f search/Dockerfile search
 
+      - name: list image
+        run: docker image list
+     
       - name: Run search
         run: >-
           docker run --rm  
