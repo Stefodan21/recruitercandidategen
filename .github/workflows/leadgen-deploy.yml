@@ -26,7 +26,7 @@ jobs:
         run: >-
           docker run --rm
           -e GOOGLE_KEY='${{ secrets.GOOGLE_KEY }}' -e CX_ID='${{ secrets.CX_ID }}'
-          -v $GITHUB_WORKSPACE/new_links.json:app/new_links.json
+          -v $GITHUB_WORKSPACE:/app
           search:latest
 
       - uses: actions/upload-artifact@v4
